@@ -1,6 +1,7 @@
-# tides
+# Tides
 
-Non realtime playground for stocks.  More a test bed and a learning project as I fumbled into clj.
+Non realtime playground for stocks.  
+More a test bed and a learning project as I fumbled into clj/cljs webapps.
 
 ## License
 

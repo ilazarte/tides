@@ -1,6 +1,6 @@
 (defproject tides "0.0.1-SNAPSHOT"
   :description "A learning project using stocks"
-  :url "https://github.com/ilazarte/arbolE"
+  :url "https://github.com/ilazarte/tides"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo}
