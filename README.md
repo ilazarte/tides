@@ -1,11 +1,11 @@
 # Tides
 
-Non realtime playground for stocks.  
+Non realtime playground for stocks using a few other projects I've created.
 More a test bed and a learning project as I fumbled into clj/cljs webapps.
 
 ## License
 
-Copyright &copy 2014 ilazarte
+Copyright &copy; 2014 ilazarte
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
