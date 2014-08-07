@@ -3,6 +3,7 @@
     [compojure.core           :refer [defroutes GET]] 
     [compojure.handler        :as handler]
     [compojure.route          :as route]
+    [ring.adapter.jetty       :as jetty]
     [ring.middleware.json     :as json]
     [ring.middleware.resource :as resource]
     [ring.middleware.content-type :as content-type]
@@ -10,12 +11,13 @@
     [tides.views              :as views]
     [arbol.core               :as tree]
     [impetus.core             :as impetus]
-    [cljd3.css                :as css]))
+    [cljd3.css                :as css])
+  (:gen-class))
 
 ; json: https://github.com/ring-clojure/ring-json
 ; from parkway was: (take-last 40 (core/make-price-ma-ratio-list core/index-watchlist))
 ; start the server using "start-web"
-; use body tag to return json into the source
+; use body tag to return json into the source.
 
 ; while run/start-web is for the cljs-start template
 ; others advocate using lein command (lein ring server-headless 8080)
@@ -62,7 +64,12 @@
 (def app
   (-> (handler/site app-routes)
     (resource/wrap-resource "/META-INF/resources")
+    (resource/wrap-resource "/public")
     (content-type/wrap-content-type)
     json/wrap-json-body
     json/wrap-json-params
     json/wrap-json-response))
+
+
+(defn -main [& args]
+  (jetty/run-jetty app {:port 80}))

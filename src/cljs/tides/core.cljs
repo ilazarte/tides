@@ -39,7 +39,7 @@
   "generate the watch list of all the stocks"
   (let [stocks @stock-state]
     (views/table 
-      ["Symbol", "Price/20"]
+      ["SYMBOL", "CLOSE/SMA(20)"]
       (for [stock stocks
             :let  [symbol (:symbol stock)
                    val    (-> (:values stock) last :y)]]       

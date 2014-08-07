@@ -1,7 +1,6 @@
 (ns tides.components
   (:require
-    [cemerick.austin.repls :refer (browser-connected-repl-js)]
-    [hiccup.page           :refer [html5 include-js include-css]]))
+    [hiccup.page :refer [html5 include-js include-css]]))
 
 (defn include-all-css 
   []
@@ -13,12 +12,12 @@
 (defn include-all-js
   []
   (include-js 
-      "/js/goog/base.js" 
-      "/webjars/jquery/2.1.1/jquery.min.js"
-      "/webjars/bootstrap/3.2.0/js/bootstrap.min.js"
-      "/webjars/react/0.9.0/react.js"
-      "/webjars/d3js/3.4.9/d3.js"
-      "/js/tides.js"))
+    "/webjars/jquery/2.1.1/jquery.min.js"
+    "/webjars/bootstrap/3.2.0/js/bootstrap.min.js"
+    "/webjars/react/0.9.0/react.js"
+    "/webjars/d3js/3.4.9/d3.js"
+    "/js/goog/base.js" 
+    "/js/tides.js"))
 
 (defmacro as-sequential
   [obj]
@@ -111,5 +110,4 @@
      [:body
       ~@forms
       (include-all-js)
-      [:script "goog.require('tides.core');"]
-      [:script (browser-connected-repl-js)]]))
+      [:script "goog.require('tides.core');"]]))
