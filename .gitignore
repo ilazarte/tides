@@ -18,3 +18,4 @@ pom.xml
 /bin/
 /tmp
 .settings
+.nrepl-port
