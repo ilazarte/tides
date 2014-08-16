@@ -1,5 +1,7 @@
 (ns tides.util)
 
+; TODO refactor with arbol
+
 (defn log [msg]
   (js/console.log msg))
 
@@ -22,9 +24,13 @@
     keyeddata))
 
 (defn load-data
-  ([url success] (load-data url success #(do 
-                                           (log (str "error invoking " url))
-                                           (log %))))
+  ([url success] 
+    (load-data 
+      url 
+      success 
+      #(do 
+         (log (str "error invoking " url))
+         (log %))))
   ([url success failure]
     "invoke the callbacks either data or error message" 
     (js/d3.json 

@@ -10,6 +10,7 @@
 
 (def stocks
   [{:id "AAPL" :name "Apple Inc." :price 523.24}
+   {:id "IBM" :name "IBM Inc." :price 12.24}
    {:id "GOOG" :name "Google Inc." :price 748.38}])
 
 ;------------------------------------------------------------
@@ -25,14 +26,13 @@
   [el]
   (view [el]))
 
-; used to use this for headers
-; for now unnecessary
-(comment
-  (grid
-      [2 5]
-      ["Symbols" "Line"]))
+(defn home
+  "Welcome page for the entire webapp"
+  []
+  (view
+    "Placeholder"))
 
-(defn index
+(defn relative
   "Start the index page.
    Three widgets are displayed.
    Left bar is the list of symbols and their current prices.

@@ -14,8 +14,8 @@
   (include-js 
     "/webjars/jquery/2.1.1/jquery.min.js"
     "/webjars/bootstrap/3.2.0/js/bootstrap.min.js"
-    "/webjars/react/0.9.0/react.js"
-    "/webjars/d3js/3.4.9/d3.js"
+    "/webjars/react/0.11.1/react.js"
+    "/webjars/d3js/3.4.11/d3.js"
     "/js/goog/base.js" 
     "/js/tides.js"))
 

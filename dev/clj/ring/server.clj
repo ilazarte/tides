@@ -1,6 +1,5 @@
 (ns ring.server
-  (:require [cemerick.austin.repls :refer (browser-connected-repl-js)] 
-            [ring.adapter.jetty    :as jetty] 
+  (:require [ring.adapter.jetty        :as jetty] 
             [compojure.handler         :as compojure]
             [tides.handler             :as handler]
             [ring.middleware.json      :as json]
