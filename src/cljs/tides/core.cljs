@@ -82,7 +82,7 @@
   "generate the watch list of all the stocks"
   (let [stocks   @watchlist-state
         sorted   (-> (sort-by :y stocks) reverse)
-        fpred    #(not= "-ignore-" (:symbol %))
+        fpred    #(not= "Guide" (:key %))
         filtered (filter fpred sorted)]
     (views/table 
       ["Symbol", "PMAr(20)"]
