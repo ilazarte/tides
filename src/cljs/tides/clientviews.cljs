@@ -8,8 +8,8 @@
 
 ; use this to factor out extra templating somehow?
 ; => (grid [1 2 3] ["a" "b" "c"])
-; ([:div.col-xs-1 "a"] [:div.col-xs-2 "b"] [:div.col-xs-3 "c"])
-
+; [:div.row ([:div.col-xs-1 "a"] [:div.col-xs-2 "b"] [:div.col-xs-3 "c"])]
+; TODO update this copy with the components.clj one.
 (defn grid [nums vals]
   (let [to-tag-kw #(-> (str "div.col-xs-" %) keyword)
         converter #(if (keyword? %) % (to-tag-kw %))

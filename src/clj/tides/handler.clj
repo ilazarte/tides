@@ -51,6 +51,9 @@
   (GET "/impetus" [params]
        {:body (last-values 40 (impetus/make-price-ma-ratio-list main-watchlist))})
   
+  (GET "/impetus-intraday" [params]
+       {:body (last-values 40 (impetus/make-price-ma-ratio-list-intraday main-watchlist))})
+  
   (GET "/impetus-test" [params]
        {:body (last-values 40 (impetus/make-price-ma-ratio-list test-watchlist))})
   

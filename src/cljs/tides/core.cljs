@@ -13,8 +13,10 @@
   (:require-macros [jayq.macros :refer [ready let-ajax]]))
 
 (def stock-state (rc/atom []))
+(def stock-state-intraday (rc/atom []))
 
 (def watchlist-state (rc/atom []))
+(def watchlist-state-intraday (rc/atom []))
 
 (defn- rename
   "Rename a map key"
@@ -35,7 +37,7 @@
      :symbol "-ignore-" 
      :values vals}))
 
-(defn load-initial! [json]
+(defn load-initial! [json daily]
   "handle post processing of the data
    set the stock and mouse over bar data"
   (let [data      (util/post-process-data json)
@@ -46,27 +48,30 @@
                     #(dissoc % :values :symbol)
                     [] vec)
         graphdata (conj data (make-guide data 1))]
-    (reset! watchlist-state wldata)
-    (reset! stock-state graphdata)
+    (reset! (if daily watchlist-state watchlist-state-intraday) wldata)
+    (reset! (if daily stock-state stock-state-intraday) graphdata)
     nil))
 
-(defn draw-linechart [stocks]
-  (-> ($ "#linechart") (height 900) (width 900))
-  (chart/line {:container "#linechart"
+(defn draw-linechart [stocks daily]
+  (chart/line {:container (if daily "#linechart" "#linechart-intraday")
                :series    (vec stocks)
+               :height    600
                :width     900
-               :height    900
                :x         {:type      :date
-                           :format    "%m-%d-%Y"
-                           :ticks     10
-                           :label     "Date (MM-dd-yyyy)"
-                           :mouseover #(reset! watchlist-state %)}
+                           :format    (if daily "%m-%d-%Y" "%I:%M")
+                           :ticks     (if daily 5 10)
+                           :label     "Date"
+                           :mouseover #(reset! (if daily watchlist-state watchlist-state-intraday) %)}
                :y         {:label "PMAr(20)"
                            :ticks 10}}))
 
 (defn div-svg []
   "simple stub component for the linechart to render intos"
   [:div {:id "linechart"}])
+
+(defn div-svg-intraday []
+  "simple stub component for the linechart to render intos"
+  [:div {:id "linechart-intraday"}])
 
 (defn select-first [selector]
   "little dom selecting hack for rendering reagent components"
@@ -76,11 +81,17 @@
 ; components
 ; ------------------------------
 
+; NOTE reagent doesn't replace outermost tag (for example table)
+; when it replaces it does the child of only...
+; this means you can't replace the id/class on update, just inside.
+; .. makes sense, probably used for events etc.
+;
+;
 ; looks like we have to always either use only attributes map in tags or not at all
 ; otherwise hiccup impls dont quite agree on what data should be used.
-(defn watchlist []
+(defn watchlist [daily]
   "generate the watch list of all the stocks"
-  (let [stocks   @watchlist-state
+  (let [stocks   (if daily @watchlist-state @watchlist-state-intraday)
         sorted   (-> (sort-by :y stocks) reverse)
         fpred    #(not= "Guide" (:key %))
         filtered (filter fpred sorted)]
@@ -92,22 +103,37 @@
         [:tr 
          [:td key]
          [:td val]])
-      :id    "watchlist"
-      :class "table")))
+      :id    (if daily "watchlist" "watchlist-intraday")
+      :class "table table-striped")))
 
-(defn linechart []
+(defn watchlist-daily []
+  (watchlist true))
+
+(defn watchlist-intraday []
+  (watchlist false))
+
+(defn linechart [daily]
   "the linechart reagent component"
-  (let [stocks  @stock-state
-        fx      #(draw-linechart stocks)
+  (let [stocks  (if daily @stock-state @stock-state-intraday)
+        fx      #(draw-linechart stocks daily)
         hooks   {:component-did-mount  fx
                  :component-did-update fx}
-        meta    (with-meta div-svg hooks)]
+        meta    (with-meta (if daily div-svg div-svg-intraday) hooks)]
     [meta]))
 
+(defn linechart-daily []
+  (linechart true))
+
+(defn linechart-intraday []
+  (linechart false))
+
 (ready
-  (rc/render-component [watchlist] (select-first "#watchlist"))
-  (rc/render-component [linechart] (select-first "#linechartcontainer"))
-  (util/load-data "/impetus" #(load-initial! %)))
+  (rc/render-component [watchlist-daily] (select-first "#watchlist"))
+  (rc/render-component [linechart-daily] (select-first "#linechartcontainer"))
+  (rc/render-component [watchlist-intraday] (select-first "#watchlist-intraday"))
+  (rc/render-component [linechart-intraday] (select-first "#linechartcontainer-intraday"))
+  (util/load-data "/impetus" #(load-initial! % true))
+  (util/load-data "/impetus-intraday" #(load-initial! % false)))
 
 ; uncomment below to use the test data instead
 (comment 
