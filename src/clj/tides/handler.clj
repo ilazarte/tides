@@ -10,6 +10,7 @@
     [tides.views              :as views]
     [arbol.core               :as arbol]
     [impetus.core             :as impetus]
+    [clj-time.coerce          :as coerce]
     [cljd3.css                :as css]))
 
 ; json: https://github.com/ring-clojure/ring-json
@@ -33,9 +34,26 @@
 (def test-watchlist
   ["AAPL" "GOOG"])
 
+(defn dayofmonth [strdate]
+  (let [dt (coerce/from-string strdate)]
+    (-> dt .dayOfMonth .get)))
+
 (defn last-values [n prices]
   "remove all by the last n observations"
   (arbol/climb prices [:values :.vec] #(take-last n %) vec))
+
+(defn last-values-intraday [n prices]
+  "first filter all values except for those on the most recent day, then last n"
+  (let [values   (get-in (vec prices) [0 :values])
+        dom      (dayofmonth (:x (last values))) 
+        pred     #(= dom (dayofmonth (:x %)))
+        filtered (arbol/climb 
+                   prices 
+                   [:values :.vec]
+                   #(filter pred %)
+                   #(take-last n %) 
+                   vec)]
+    filtered))
 
 (defroutes app-routes
   
@@ -52,7 +70,7 @@
        {:body (last-values 40 (impetus/make-price-ma-ratio-list main-watchlist))})
   
   (GET "/impetus-intraday" [params]
-       {:body (last-values 40 (impetus/make-price-ma-ratio-list-intraday main-watchlist))})
+       {:body (last-values-intraday 40 (impetus/make-price-ma-ratio-list-intraday main-watchlist))})
   
   (GET "/impetus-test" [params]
        {:body (last-values 40 (impetus/make-price-ma-ratio-list test-watchlist))})

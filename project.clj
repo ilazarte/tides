@@ -29,7 +29,8 @@
                  [jayq "2.5.2"]
                  [impetus "0.1.0-SNAPSHOT"]
                  [ilazarte/arbol "0.1.3" :exclusions [org.clojure/clojure]]
-                 [cljd3 "0.1.0-SNAPSHOT" :exclusions [org.clojure/clojure]]]
+                 [cljd3 "0.1.0-SNAPSHOT" :exclusions [org.clojure/clojure]]
+                 [clj-time "0.9.0"]]
   
   :plugins [[lein-cljsbuild "1.0.4"]
             [lein-ring "0.8.13"]]
