@@ -8,6 +8,16 @@
             [ring.middleware.resource  :as resource]
             [ring.middleware.content-type :as content-type]))
 
+(defn wrap-nocache 
+  "completely disable all caching on the client, helps with source maps accuracy and update to dateness"
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+    (-> response
+      (assoc-in [:headers "Cache-Control"] "no-cache, no-store, must-revalidate")
+      (assoc-in [:headers "Pragma"] "no-cache")
+      (assoc-in [:headers "Expires"] "0")))))
+
 (def app
   (-> (compojure/site handler/app-routes)
     (resource/wrap-resource "/META-INF/resources")
@@ -15,7 +25,8 @@
     (content-type/wrap-content-type)
     json/wrap-json-body
     json/wrap-json-params
-    json/wrap-json-response))
+    json/wrap-json-response
+    wrap-nocache))
 
 (defn start []
   (defonce server

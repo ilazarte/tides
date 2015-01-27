@@ -47,12 +47,7 @@
   (let [values   (get-in (vec prices) [0 :values])
         dom      (dayofmonth (:x (last values))) 
         pred     #(= dom (dayofmonth (:x %)))
-        filtered (arbol/climb 
-                   prices 
-                   [:values :.vec]
-                   #(filter pred %)
-                   #(take-last n %) 
-                   vec)]
+        filtered (arbol/climb prices [:values :.vec] #(filter pred %) vec)]
     filtered))
 
 (defroutes app-routes
@@ -60,6 +55,8 @@
   (GET "/" [] (views/home))
   
   (GET "/relative" [] (views/relative))
+  
+  (GET "/svgchart" [] (views/svgchart))
  
   (GET "/learn" [] (views/single-div :div#tides))
   

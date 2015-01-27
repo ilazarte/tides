@@ -127,13 +127,16 @@
 (defn linechart-intraday []
   (linechart false))
 
-(ready
-  (rc/render-component [watchlist-daily] (select-first "#watchlist"))
-  (rc/render-component [linechart-daily] (select-first "#linechartcontainer"))
-  (rc/render-component [watchlist-intraday] (select-first "#watchlist-intraday"))
-  (rc/render-component [linechart-intraday] (select-first "#linechartcontainer-intraday"))
-  (util/load-data "/impetus" #(load-initial! % true))
-  (util/load-data "/impetus-intraday" #(load-initial! % false)))
+(if (= document.location.pathname "/relative")
+  (ready
+    (rc/render-component [watchlist-daily] (select-first "#watchlist"))
+    (rc/render-component [linechart-daily] (select-first "#linechartcontainer"))
+    (rc/render-component [watchlist-intraday] (select-first "#watchlist-intraday"))
+    (rc/render-component [linechart-intraday] (select-first "#linechartcontainer-intraday"))
+    (util/load-data "/impetus" #(load-initial! % true))
+    (util/load-data "/impetus-intraday" #(load-initial! % false))))
+
+
 
 ; uncomment below to use the test data instead
 (comment 

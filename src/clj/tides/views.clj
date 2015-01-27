@@ -36,7 +36,7 @@
     "/webjars/jquery/2.1.3/jquery.min.js"
     "/webjars/bootstrap/3.3.1/js/bootstrap.min.js"
     "/webjars/react/0.11.1/react.js"
-    "/webjars/d3js/3.5.2/d3.js"
+    "/webjars/d3js/3.5.3/d3.js"
     "/js/goog/base.js" 
     "/js/tides.js"))
 
@@ -52,32 +52,31 @@
   "Abstract away the wrapping view stuff.
    Eventually be able to conditional include the browser repl script
    Eventually handle title?"
-  [& forms]
+  [namespace & forms]
   `(html5 
      [:head (include-all-css)]
      [:body
       ~@forms
       (include-all-js)
-      [:script "goog.require('tides.core');"]]))
+      [:script (str "goog.require('" ~namespace "');")]]))
 
 ;------------------------------------------------------------
 ; Views
 ;------------------------------------------------------------
 (defn file-not-found
   []
-  (view "File not found."))
+  (view "tides.core" "File not found."))
 
 (defn single-div
   "Load a simple empty page which will be populated dynamically
   (single-div :div#message)"
   [el]
-  (view [el]))
+  (view "tides.core" [el]))
 
 (defn home
   "Welcome page for the entire webapp"
   []
-  (view
-    "Placeholder"))
+  (view "tides.core" "Placeholder"))
 
 (defn relative
   "Start the index page.
@@ -86,7 +85,7 @@
    Mid chart is the multi-line chart,
    Right chart is the stacked bar chart."
   []
-  (view
+  (view "tides.core"
     [:div.row {:style "height:600px;"}
      [:div.col-xs-2 {:style "overflow-x:scroll; overflow-y hidden; height: 100%;"}
       [:table#watchlist.table.table-striped nil]]
@@ -97,3 +96,9 @@
       [:table#watchlist-intraday.table.table-striped nil]]
      [:div.col-xs-10
       [:div#linechartcontainer-intraday nil]]]))
+
+(defn svgchart
+  "Developing svg chart"
+  []
+  (view "tides.svgchart" 
+    [:div#main nil]))
