@@ -6,7 +6,8 @@
             [tides.util        :as    util]
             [arbol.core        :as    arbol]
             [cljd3.chart       :as    chart]
-            [cljd3.core        :as    core])
+            [cljd3.core        :as    core]
+            [clojure.string    :as    cstr])
   
   (:require-macros 
     [jayq.macros  :refer [ready let-ajax]]
@@ -38,8 +39,6 @@
                     #(dissoc % :values :symbol)
                     [] vec)
         graphdata (conj data (make-guide data 1))]
-    (js/console.log "loaded initial")
-    (js/console.log (clj->js graphdata))
     (reset! stock-state graphdata)
     nil))
 
@@ -71,28 +70,36 @@
     (when-not (empty? vals) 
       [(reduce min vals) (reduce max vals)])))
 
-(defn stock-text [attrs stocks]
-  [:g attrs
-   (foreach [stock stocks
-             i     (range (count stocks))]
-     (let [y (* i 10)]
-       [:text {:transform (str "translate(0, " y ")")} (str y " !=> " (:key stock))]))])
+(defn date? [any]
+  (let [cname (js/Object.prototype.toString.call any)  
+        idx   (.indexOf cname "Date")
+        found (> idx -1)]
+    found))
+
+(defn millis->date [val]
+  (let [ndate (js/Date.)
+        ndate (doto ndate (.setTime val))]
+    ndate))
 
 ; http://stackoverflow.com/questions/5294955/how-to-scale-down-a-range-of-numbers-with-a-known-min-and-max-value
 ; return ((limitMax - limitMin) * (valueIn - baseMin) / (baseMax - baseMin)) + limitMin;
+; subtly handle the date conversions
 (defn linear-scale [from to]
   (let [bmin (first from)
         bmax (second from)
         lmin (first to)
         lmax (second to)
-        ldiff (- lmax lmin)
-        bdiff (- bmax bmin)]
+        isdate (date? lmin)
+        ldiff  (- lmax lmin)
+        bdiff  (- bmax bmin)]
     (fn [val]
       (let [vdiff  (- val bmin)
             top    (* ldiff vdiff)
             ranged (/ top bdiff)
-            res    (+ ranged lmin)]
-        res))))
+            lminsum (if isdate (.getTime lmin) lmin) 
+            res     (+ ranged lminsum)
+            restype (if isdate (millis->date res) res)]
+        restype))))
 
 ; TODO this is a place to use scales
 ; TODO consider the starting point in the domain as well (for example 20-100)
@@ -103,22 +110,17 @@
         max    (get config :max)
         xydom  [0 max]
         sdom   [0 steps]
-        srange (range steps)
+        srange (range (inc steps))
         stepscale (linear-scale sdom domain)
         xyscale   (linear-scale domain xydom)
         domvals   (map #(stepscale %) srange)
         xyvals    (map #(xyscale %) domvals)]
-    (do
-      (js/console.log "domvals, xyvals, orientation:")
-      (js/console.log (clj->js orient))
-      (js/console.log (clj->js domvals))
-      (js/console.log (clj->js xyvals)))
     (cond
       (= orient :vertical)
       [:g attrs 
        (foreach [dval (reverse domvals)
                  yval xyvals]
-         [:g {:transform (str "translate(0, " yval ")")}
+         [:g {:transform (str "translate(0, " yval ")") :key "x-axis"}
             [:line {:x2 -6 :stroke-width "1" :stroke "black"}]
             [:text {:x -9 :style {:text-anchor "end"}} dval]]) 
        [:line {:y2 max :stroke-width "1" :stroke "black"}]]
@@ -126,37 +128,46 @@
       [:g attrs
        (foreach [dval domvals
                  xval xyvals]
-         [:g {:transform (str "translate(" xval ", 0)")}
+         (let [dvalstr (if (date? dval) (.toLocaleString dval) dval)] 
+           [:g {:transform (str "translate(" xval ", 0)")}
             [:line {:y2 6 :stroke-width "1" :stroke "black"}]
-            [:text {:y 15 :style {:text-anchor "middle"}} dval]]) 
+            [:text {:y 15 :style {:text-anchor "middle"}} dvalstr]])) 
        [:line {:x2 max :stroke-width "1" :stroke "black"}]]
       :else 
       [:text (str "invalid orientation " (clj->js orient))])))
 
-(defn line [data]
-  )
+(defn lines 
+  "Convert the lines to svg paths" 
+  [data maxx maxy x-domain y-domain]
+  (let [x-scale (linear-scale x-domain [0 maxx])
+        y-scale (linear-scale y-domain [maxy 0])
+        scale   #(vector (js/Math.round (x-scale (:x %))) " " (js/Math.round (y-scale (:y %))))
+        to-path #(vector :path {:d      (apply str "M" (cstr/join (flatten (interpose " L" (map scale (:values %))))) " Z")
+                                :key    (:key %) 
+                                :class  (str (cstr/lower-case (:key %)) "-plot")
+                                :fill   "transparent"
+                                :stroke "black"})
+        paths   (map to-path data)] 
+    [:g.paths {:key "lines"} paths]))
 
-(defn linechart-svg []
+(defn linechart-svg 
   "generate the watch list of all the stocks"
+  []
   (let [stocks @stock-state    
         y-domain (domain stocks :y)
         x-domain (domain stocks :x)]
-    (do 
-      (js/console.log "x,y domains:")
-      (js/console.log (clj->js x-domain))
-      (js/console.log (clj->js y-domain)))
     [:svg {:style {:width  900 
                    :height 600}}
      [:g {:transform "translate(50, 20)"}
       [axis 
-       {:class "y-axis"} 
+       {:class "y-axis" :key "y-axis"} 
        {:max 550 :orient :vertical :domain y-domain}]
       [axis
-       {:class "x-axis" :transform "translate(0, 550)"}
-       {:max 890 :orient :horizontal :domain x-domain}]]]))
+       {:class "x-axis" :key "x-axis" :transform "translate(0, 550)"}
+       {:max 890 :orient :horizontal :domain x-domain}]
+      [lines stocks 890 550 x-domain y-domain]]]))
 
 (ready
   (when (= js/document.location.pathname "/svgchart")
     (rc/render-component [linechart-svg] (select-first "#main"))  
     (util/load-data "/impetus" #(load-initial! %))))
- 
